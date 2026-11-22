@@ -76,7 +76,7 @@ test('does not score 1-2-3 or 1-2-3-4 as straights', async ({ page }) => {
   await selectDice(page, [3, 2, 1]);
   await expect(page.locator('#turnScore')).toHaveText('100');
   await expect(page.locator('#roll')).toBeEnabled();
-  await expect(page.locator('#bank')).toBeDisabled();
+  await expect(page.locator('#bank')).toBeEnabled();
   await selectDice(page, [4]);
   await expect(page.locator('#turnScore')).toHaveText('150');
 });
@@ -146,43 +146,83 @@ test('automatically passes the turn when the first roll has no scoring dice', as
   await expect(page.locator('#roll')).toBeEnabled();
 });
 
-test('enforces the entry minimum and loses unbanked points on a bust', async ({ page }) => {
+test('allows 50-point entry and adds later automatic banking to the saved score', async ({ page }) => {
   await startGame(page, [
-    [1, 3, 3, 3, 2, 4],
-    [1, 2, 3, 4, 6, 6],
-    [2, 2, 3, 3, 4],
-    [5, 2, 2, 3, 4, 6],
+    [5, 2, 2, 3, 4, 6], [2, 2, 3, 3, 4, 6],
+    [5, 2, 2, 3, 4, 6], [2, 2, 3, 3, 4],
   ]);
-  await roll(page, [1, 3, 3, 3, 2, 4]);
-  await selectDice(page, [0]);
-  await expect(page.locator('#turnScore')).toHaveText('100');
   await expect(page.locator('#bank')).toBeDisabled();
-  await selectDice(page, [0, 1, 2, 3]);
-  await expect(page.locator('#turnScore')).toHaveText('300');
-  await expect(page.locator('#bank')).toBeEnabled();
-  await page.locator('#bank').click();
-  await expect(page.locator('#scores .pl b').nth(0)).toHaveText('300');
-
-  await expect(page.locator('#passTitle')).toHaveText("Player 2's turn");
-  await page.getByRole('button', { name: 'Ready', exact: true }).click();
-  await roll(page, [1, 2, 3, 4, 6, 6]);
-  await selectDice(page, [0]);
-  await expect(page.locator('#turnScore')).toHaveText('100');
-  await roll(page, [1, 2, 2, 3, 3, 4]);
-  await expect(page.locator('#status')).toContainText('Bust!');
-  await expect(page.locator('#roll')).toBeDisabled();
-  await expect(page.locator('#bank')).toBeDisabled();
-  await expect(page.locator('#scores .pl b').nth(1)).toHaveText('0');
-
-  await expect(page.locator('#passTitle')).toHaveText("Player 1's turn");
-  await expect(page.locator('#turnScore')).toHaveText('0');
-  await page.getByRole('button', { name: 'Ready', exact: true }).click();
   await roll(page, [5, 2, 2, 3, 4, 6]);
+  await expect(page.locator('#bank')).toBeDisabled();
   await selectDice(page, [0]);
   await expect(page.locator('#bank')).toHaveText('Bank 50');
   await expect(page.locator('#bank')).toBeEnabled();
   await page.locator('#bank').click();
-  await expect(page.locator('#scores .pl b').nth(0)).toHaveText('350');
+  await expect(page.locator('#scores .pl b').nth(0)).toHaveText('50');
+  await expect(page.locator('#passTitle')).toHaveText("Player 2's turn");
+  await page.locator('#passBtn').click();
+  await roll(page, [2, 2, 3, 3, 4, 6]);
+  await expect(page.locator('#passTitle')).toHaveText("Player 1's turn");
+  await page.locator('#passBtn').click();
+  await roll(page, [5, 2, 2, 3, 4, 6]);
+  await selectDice(page, [0]);
+  await roll(page, [5, 2, 2, 3, 3, 4]);
+  await expect(page.locator('#status')).toHaveText('No scoring dice. Automatically banked 50!');
+  await expect(page.locator('#scores .pl b').nth(0)).toHaveText('100');
+  await expect(page.locator('#scores .pl b').nth(1)).toHaveText('0');
+});
+
+test('automatically banks exactly 50 points on a non-scoring reroll', async ({ page }) => {
+  await startGame(page, [[5, 2, 2, 3, 4, 6], [2, 2, 3, 3, 4]]);
+  await roll(page, [5, 2, 2, 3, 4, 6]);
+  await selectDice(page, [0]);
+  await roll(page, [5, 2, 2, 3, 3, 4]);
+  await expect(page.locator('#status')).toHaveText('No scoring dice. Automatically banked 50!');
+  await expect(page.locator('#scores .pl b').nth(0)).toHaveText('50');
+  await expect(page.locator('#roll')).toBeDisabled();
+  await expect(page.locator('#bank')).toBeDisabled();
+  await page.locator('#language').selectOption('pl');
+  await expect(page.locator('#status')).toHaveText('Brak punktujących kości. Automatycznie zapisano 50 pkt!');
+  await page.locator('#language').selectOption('da');
+  await expect(page.locator('#status')).toHaveText('Ingen terninger giver point. Automatisk gemt 50 point!');
+  await expect(page.locator('#scores .pl b').nth(0)).toHaveText('50');
+  await expect(page.locator('#passTitle')).toHaveText('Tur: Spiller 2');
+  await expect(page.locator('#turnScore')).toHaveText('0');
+});
+
+test('automatically banks points from multiple throws exactly once', async ({ page }) => {
+  await startGame(page, [[1, 2, 3, 4, 6, 6], [5, 2, 3, 4, 6], [2, 3, 4, 6]]);
+  await roll(page, [1, 2, 3, 4, 6, 6]);
+  await selectDice(page, [0]);
+  await roll(page, [1, 5, 2, 3, 4, 6]);
+  await selectDice(page, [1]);
+  await expect(page.locator('#turnScore')).toHaveText('150');
+  await roll(page, [1, 5, 2, 3, 4, 6]);
+  await expect(page.locator('#status')).toHaveText('No scoring dice. Automatically banked 150!');
+  await expect(page.locator('#scores .pl b').nth(0)).toHaveText('150');
+  await expect(page.locator('#roll')).toBeDisabled();
+  await expect(page.locator('#bank')).toBeDisabled();
+  await expect(page.locator('#passTitle')).toHaveText("Player 2's turn");
+  await expect(page.locator('#scores .pl b').nth(0)).toHaveText('150');
+  await expect(page.locator('#scores .pl b').nth(1)).toHaveText('0');
+  await expect(page.locator('#turnScore')).toHaveText('0');
+});
+
+test('automatic banking after hot dice triggers the final round', async ({ page }) => {
+  await startGame(page, [
+    [1, 2, 3, 4, 5, 6], [2, 2, 3, 3, 4, 6], [2, 2, 3, 3, 4, 6],
+  ], { target: 1000 });
+  await roll(page, [1, 2, 3, 4, 5, 6]);
+  await selectDice(page, [0, 1, 2, 3, 4, 5]);
+  await roll(page, [2, 2, 3, 3, 4, 6]);
+  await expect(page.locator('#status')).toHaveText('No scoring dice. Automatically banked 1500!');
+  await expect(page.locator('#scores .pl b').nth(0)).toHaveText('1500');
+  await expect(page.locator('#passTitle')).toHaveText("Player 2's turn");
+  await page.locator('#passBtn').click();
+  await roll(page, [2, 2, 3, 3, 4, 6]);
+  await expect(page.locator('#passTitle')).toHaveText('🏆 Player 1 wins!');
+  await expect(page.locator('#passText')).toContainText('Player 1: 1500');
+  await expect(page.locator('#passText')).toContainText('Player 2: 0');
 });
 
 test('rolls all six dice again after scoring all of them', async ({ page }) => {
@@ -233,7 +273,7 @@ test('switches the setup and rules between languages without losing entered name
   await expect(page.locator('#names input').first()).toHaveValue('Łukasz');
   await page.locator('summary').click();
   await expect(page.locator('.rules')).toContainText('Sekwencja 1–5');
-  await expect(page.locator('.rules')).toContainText('co najmniej 300 punktów');
+  await expect(page.locator('.rules')).toContainText('co najmniej 50 punktów');
 
   await page.locator('#language').selectOption('da');
   await expect(page.locator('html')).toHaveAttribute('lang', 'da');
@@ -243,7 +283,7 @@ test('switches the setup and rules between languages without losing entered name
   await expect(page.getByPlaceholder('Spiller 2')).toBeVisible();
   await expect(page.locator('details.rules')).toHaveAttribute('open', '');
   await expect(page.locator('.rules')).toContainText('Række 1–5');
-  await expect(page.locator('.rules')).toContainText('mindst 300 point');
+  await expect(page.locator('.rules')).toContainText('mindst 50 point');
   await expect(page.locator('#names input').first()).toHaveValue('Łukasz');
 
   await page.locator('#language').selectOption('en');
@@ -292,16 +332,16 @@ test('translates the pass screen and an active turn without changing game state'
 const localizedTurns = [
   {
     language: 'pl', confirm: 'Porzucić tę grę?', invalid: 'Każda wybrana kość musi dawać punkty.',
-    selection: 'Wybrane: 100', bust: '💥 Spalona tura! Punkty z tej tury przepadają.', next: 'Tura: Gracz 2',
+    selection: 'Wybrane: 100', autoBanked: 'Brak punktujących kości. Automatycznie zapisano 100 pkt!', next: 'Tura: Gracz 2',
   },
   {
     language: 'da', confirm: 'Vil du afslutte dette spil?', invalid: 'Alle valgte terninger skal give point.',
-    selection: 'Valg: 100', bust: '💥 Nitte! Du mister turens point.', next: 'Tur: Spiller 2',
+    selection: 'Valg: 100', autoBanked: 'Ingen terninger giver point. Automatisk gemt 100 point!', next: 'Tur: Spiller 2',
   },
 ];
 
 for (const locale of localizedTurns) {
-  test(`localizes the confirmation, invalid selection, and bust in ${locale.language}`, async ({ page }) => {
+  test(`localizes the confirmation, invalid selection, and automatic banking in ${locale.language}`, async ({ page }) => {
     await openGame(page, [[1, 2, 3, 4, 6, 6], [2, 2, 3, 3, 4]]);
     await page.locator('#language').selectOption(locale.language);
     await page.locator('#start').click();
@@ -318,8 +358,8 @@ for (const locale of localizedTurns) {
     await selectDice(page, [1]);
     await expect(page.locator('#status')).toHaveText(locale.selection);
     await roll(page, [1, 2, 2, 3, 3, 4]);
-    await expect(page.locator('#status')).toHaveText(locale.bust);
-    await expect(page.locator('#scores .pl b').nth(0)).toHaveText('0');
+    await expect(page.locator('#status')).toHaveText(locale.autoBanked);
+    await expect(page.locator('#scores .pl b').nth(0)).toHaveText('100');
     await expect(page.locator('#passTitle')).toHaveText(locale.next);
   });
 }

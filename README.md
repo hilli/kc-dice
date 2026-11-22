@@ -6,7 +6,9 @@ Choose English, Polski, or Dansk from the language selector. You can change
 languages during a game without losing your turn or scores.
 
 The scoring combinations follow Kingdom Come's ordinary dice rules. The
-300-point entry minimum and final round are house rules.
+50-point entry minimum, automatic banking on a non-scoring reroll, and final
+round are house rules. A non-scoring roll ends the turn but preserves any points
+earned during it; a non-scoring first roll simply passes the turn with no points.
 
 ## Tests
 

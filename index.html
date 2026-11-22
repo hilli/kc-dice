@@ -70,7 +70,7 @@ details{margin-top:8px}summary{cursor:pointer}
   <br>
   <button id="start" style="width:100%" data-i18n="start">Start game</button>
   <details class="rules"><summary data-i18n="rules">Rules</summary>
-    <p><span data-i18n="rulesIntro">Roll six dice. Tap scoring dice to set them aside, then </span><b data-i18n="roll">Roll</b><span data-i18n="rulesAfterRoll"> the rest or </span><b data-i18n="bank">Bank</b><span data-i18n="rulesAfterBank"> your points. If a roll has no scoring dice, you </span><b data-i18n="bustWord">bust</b><span data-i18n="rulesAfterBust"> and lose the turn's points. Scored all six? </span><b data-i18n="hotWord">Hot dice</b><span data-i18n="rulesEnd"> – roll all six again. First to reach the target triggers a final round; highest score wins.</span></p>
+    <p><span data-i18n="rulesIntro">Roll six dice. Tap scoring dice to set them aside, then </span><b data-i18n="roll">Roll</b><span data-i18n="rulesAfterRoll"> the rest or </span><b data-i18n="bank">Bank</b><span data-i18n="rulesAfterBank"> your points. If a roll has no scoring dice, you </span><b data-i18n="bustWord">bust</b><span data-i18n="rulesAfterBust"> and the turn ends, but any points earned this turn are automatically banked. Scored all six? </span><b data-i18n="hotWord">Hot dice</b><span data-i18n="rulesEnd"> – roll all six again. First to reach the target triggers a final round; highest score wins.</span></p>
     <table>
       <tr><td data-i18n="singleOne">Single 1</td><td>100</td></tr>
       <tr><td data-i18n="singleFive">Single 5</td><td>50</td></tr>
@@ -81,7 +81,7 @@ details{margin-top:8px}summary{cursor:pointer}
       <tr><td data-i18n="straightTwoSix">Straight 2–6</td><td>750</td></tr>
       <tr><td data-i18n="straightOneSix">Straight 1–6</td><td>1500</td></tr>
     </table>
-    <p data-i18n="entry">You must bank at least 300 points to get on the board (you may keep rolling until you reach it).</p>
+    <p data-i18n="entry">You must bank at least 50 points to get on the board (you may keep rolling until you reach it).</p>
   </details>
 </section>
 <section id="game" class="hidden" style="display:flex;flex-direction:column;flex:1">
@@ -98,7 +98,7 @@ details{margin-top:8px}summary{cursor:pointer}
 </main>
 <div id="pass" class="pass hidden"><h2 id="passTitle"></h2><p id="passText"></p><button id="passBtn">Ready</button></div>
 <script>
-const MIN_ENTRY = 300;
+const MIN_ENTRY = 50;
 const $ = id => document.getElementById(id);
 const PIPS = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
 const TEXT = {
@@ -108,17 +108,18 @@ const TEXT = {
     rulesIntro: 'Roll six dice. Tap scoring dice to set them aside, then ',
     roll: 'Roll', rulesAfterRoll: ' the rest or ', bank: 'Bank',
     rulesAfterBank: ' your points. If a roll has no scoring dice, you ',
-    bustWord: 'bust', rulesAfterBust: " and lose the turn's points. Scored all six? ",
+    bustWord: 'bust', rulesAfterBust: ' and the turn ends, but any points earned this turn are automatically banked. Scored all six? ',
     hotWord: 'Hot dice', rulesEnd: ' – roll all six again. First to reach the target triggers a final round; highest score wins.',
     singleOne: 'Single 1', singleFive: 'Single 5', threeOnes: 'Three 1s', threeOthers: 'Three 2–6s',
     faceTimes: 'face × 100', multipleKind: '4 / 5 / 6 of a kind', multipleValue: '×2 / ×4 / ×8 of the three',
     straightOneFive: 'Straight 1–5', straightTwoSix: 'Straight 2–6', straightOneSix: 'Straight 1–6',
-    entry: 'You must bank at least 300 points to get on the board (you may keep rolling until you reach it).',
+    entry: 'You must bank at least 50 points to get on the board (you may keep rolling until you reach it).',
     thisTurn: 'this turn:', newGame: 'New game', player: n => `Player ${n}`,
     playerTurn: name => `${name}'s turn`, passDevice: 'Pass the device, then tap Ready.', ready: 'Ready',
     rollPrompt: 'Roll the dice!', pickScoring: 'Pick scoring dice.', selectScoring: 'Select scoring dice.',
     invalidSelection: 'Every selected die must score.', selection: n => `Selection: ${n}`,
-    hotDice: '🔥 Hot dice! Rolling all six.', bust: '💥 Bust! Turn points lost.',
+    hotDice: '🔥 Hot dice! Rolling all six.', bust: '💥 Bust! No points earned this turn.',
+    autoBanked: n => `No scoring dice. Automatically banked ${n}!`,
     banked: n => `Banked ${n}!`, rollAll: 'Roll all 6 🔥', bankAmount: n => `Bank ${n}`,
     confirmQuit: 'Abandon this game?', join: ' & ',
     winner: (names, count) => `🏆 ${names} ${count === 1 ? 'wins' : 'win'}!`, playAgain: 'Play again',
@@ -129,17 +130,18 @@ const TEXT = {
     rulesIntro: 'Rzuć sześcioma kośćmi. Dotknij punktujących kości, aby je odłożyć, a następnie wybierz ',
     roll: 'Rzuć', rulesAfterRoll: ', aby rzucić pozostałymi, lub ', bank: 'Zapisz',
     rulesAfterBank: ', aby zapisać punkty. Jeśli żaden wynik nie punktuje, następuje ',
-    bustWord: 'spalenie tury', rulesAfterBust: ' i tracisz punkty z tej tury. Odłożono wszystkie sześć kości? ',
+    bustWord: 'spalenie tury', rulesAfterBust: ', ale zdobyte w tej turze punkty zostają automatycznie zapisane. Odłożono wszystkie sześć kości? ',
     hotWord: 'Gorące kości', rulesEnd: ' – rzuć wszystkimi ponownie. Gdy ktoś osiągnie cel, rozpoczyna się ostatnia runda; wygrywa najwyższy wynik.',
     singleOne: 'Jedna jedynka', singleFive: 'Jedna piątka', threeOnes: 'Trzy jedynki', threeOthers: 'Trzy jednakowe (2–6)',
     faceTimes: 'liczba oczek × 100', multipleKind: '4 / 5 / 6 jednakowych kości', multipleValue: '×2 / ×4 / ×8 wartości trójki',
     straightOneFive: 'Sekwencja 1–5', straightTwoSix: 'Sekwencja 2–6', straightOneSix: 'Sekwencja 1–6',
-    entry: 'Aby rozpocząć zdobywanie punktów, musisz zapisać co najmniej 300 punktów w jednej turze (możesz rzucać dalej, dopóki ich nie uzbierasz).',
+    entry: 'Aby rozpocząć zdobywanie punktów, musisz zapisać co najmniej 50 punktów w jednej turze (możesz rzucać dalej, dopóki ich nie uzbierasz).',
     thisTurn: 'w tej turze:', newGame: 'Nowa gra', player: n => `Gracz ${n}`,
     playerTurn: name => `Tura: ${name}`, passDevice: 'Podaj urządzenie następnemu graczowi i wybierz Gotowe.', ready: 'Gotowe',
     rollPrompt: 'Rzuć kośćmi!', pickScoring: 'Wybierz punktujące kości.', selectScoring: 'Wybierz punktujące kości.',
     invalidSelection: 'Każda wybrana kość musi dawać punkty.', selection: n => `Wybrane: ${n}`,
-    hotDice: '🔥 Gorące kości! Rzucasz wszystkimi sześcioma.', bust: '💥 Spalona tura! Punkty z tej tury przepadają.',
+    hotDice: '🔥 Gorące kości! Rzucasz wszystkimi sześcioma.', bust: '💥 Spalona tura! Nie zdobyto żadnych punktów.',
+    autoBanked: n => `Brak punktujących kości. Automatycznie zapisano ${n} pkt!`,
     banked: n => `Zapisano ${n} pkt!`, rollAll: 'Rzuć wszystkimi 6 🔥', bankAmount: n => `Zapisz ${n}`,
     confirmQuit: 'Porzucić tę grę?', join: ' i ',
     winner: (names, count) => `🏆 ${count === 1 ? 'Zwycięzca' : 'Zwycięzcy'}: ${names}!`, playAgain: 'Zagraj ponownie',
@@ -150,17 +152,18 @@ const TEXT = {
     rulesIntro: 'Kast seks terninger. Tryk på de terninger, der giver point, for at lægge dem til side. Vælg derefter ',
     roll: 'Kast', rulesAfterRoll: ' for at kaste resten eller ', bank: 'Gem',
     rulesAfterBank: ' for at gemme pointene. Hvis et kast ikke giver point, slår du en ',
-    bustWord: 'nitte', rulesAfterBust: ' og mister turens point. Har du lagt alle seks terninger til side? ',
+    bustWord: 'nitte', rulesAfterBust: ' og turen slutter, men alle point fra turen gemmes automatisk. Har du lagt alle seks terninger til side? ',
     hotWord: 'Varme terninger', rulesEnd: ' – kast alle seks igen. Når en spiller når målet, begynder en sidste runde; den højeste score vinder.',
     singleOne: 'En enkelt 1’er', singleFive: 'En enkelt 5’er', threeOnes: 'Tre 1’ere', threeOthers: 'Tre ens (2–6)',
     faceTimes: 'antal øjne × 100', multipleKind: '4 / 5 / 6 ens', multipleValue: '×2 / ×4 / ×8 af værdien for tre ens',
     straightOneFive: 'Række 1–5', straightTwoSix: 'Række 2–6', straightOneSix: 'Række 1–6',
-    entry: 'Du skal gemme mindst 300 point for at komme på tavlen (du kan fortsætte med at kaste, indtil du har nok).',
+    entry: 'Du skal gemme mindst 50 point for at komme på tavlen (du kan fortsætte med at kaste, indtil du har nok).',
     thisTurn: 'denne tur:', newGame: 'Nyt spil', player: n => `Spiller ${n}`,
     playerTurn: name => `Tur: ${name}`, passDevice: 'Giv enheden videre, og tryk på Klar.', ready: 'Klar',
     rollPrompt: 'Kast terningerne!', pickScoring: 'Vælg terninger, der giver point.', selectScoring: 'Vælg terninger, der giver point.',
     invalidSelection: 'Alle valgte terninger skal give point.', selection: n => `Valg: ${n}`,
-    hotDice: '🔥 Varme terninger! Kast alle seks igen.', bust: '💥 Nitte! Du mister turens point.',
+    hotDice: '🔥 Varme terninger! Kast alle seks igen.', bust: '💥 Nitte! Ingen point optjent denne tur.',
+    autoBanked: n => `Ingen terninger giver point. Automatisk gemt ${n} point!`,
     banked: n => `Gemt ${n} point!`, rollAll: 'Kast alle 6 🔥', bankAmount: n => `Gem ${n}`,
     confirmQuit: 'Vil du afslutte dette spil?', join: ' og ',
     winner: (names, count) => `🏆 ${count === 1 ? 'Vinder' : 'Vindere'}: ${names}!`, playAgain: 'Spil igen',
@@ -353,24 +356,31 @@ $('roll').onclick = () => {
   render();
   setTimeout(() => { free.forEach(d => delete d.rolling); }, 400);
   if (!hasScoring(free.map(d => d.v))) {
-    t.over = true;
-    render();
-    setStatus('bust');
+    if (t.total >= MIN_ENTRY) bankTurn('autoBanked');
+    else {
+      t.over = true;
+      render();
+      setStatus('bust');
+    }
     if (navigator.vibrate) navigator.vibrate([80,40,80]);
     setTimeout(() => nextPlayer(), 1800);
   }
 };
 $('bank').onclick = () => {
   const t = G.turn, p = G.players[G.cur];
-  if (selScore() <= 0) return;
+  if (t.over || selScore() <= 0 || (p.score === 0 && t.total + selScore() < MIN_ENTRY)) return;
   lockSelection();
-  p.score += t.total;
-  t.over = true;
-  setStatus('banked', t.total);
-  render();
-  if (G.finalFor === null && p.score >= G.target) G.finalFor = G.cur;
+  bankTurn();
   setTimeout(nextPlayer, 1200);
 };
+function bankTurn(message = 'banked') {
+  const t = G.turn, p = G.players[G.cur];
+  p.score += t.total;
+  t.over = true;
+  setStatus(message, t.total);
+  render();
+  if (G.finalFor === null && p.score >= G.target) G.finalFor = G.cur;
+}
 function nextPlayer() {
   G.cur = (G.cur + 1) % G.players.length;
   if (G.finalFor !== null && G.cur === G.finalFor) return endGame();
