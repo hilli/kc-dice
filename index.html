@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#2a1d12">
+<title>Farkle Dice – Medieval Dice Game</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{margin:0;height:100%;background:#2a1d12;color:#f1e3c4;font-family:Georgia,'Times New Roman',serif}
+body{background:radial-gradient(circle at 50% 0,#4a3420,#1d130a);display:flex;flex-direction:column;min-height:100dvh}
+h1{font-size:1.6rem;text-align:center;margin:.6rem 0;letter-spacing:.08em;color:#e6c36a}
+main{flex:1;display:flex;flex-direction:column;padding:0 12px 12px;max-width:560px;width:100%;margin:0 auto}
+.hidden{display:none!important}
+.card{background:#3a2a1a;border:2px solid #7a5a30;border-radius:12px;padding:14px;margin-bottom:12px}
+button{font:inherit;font-weight:bold;color:#2a1d12;background:linear-gradient(#f0cf7c,#c99a3c);border:2px solid #7a5a30;border-radius:10px;padding:14px 16px;font-size:1.1rem;cursor:pointer;touch-action:manipulation}
+button:disabled{opacity:.4}
+button.sec{background:#5a4328;color:#f1e3c4}
+.row{display:flex;gap:10px}.row>*{flex:1}
+label{display:block;margin:8px 0 4px}
+input[type=text]{width:100%;font:inherit;font-size:1.1rem;padding:10px;border-radius:8px;border:2px solid #7a5a30;background:#f1e3c4;color:#2a1d12;margin-bottom:6px}
+.seg{display:flex;gap:6px}.seg button{flex:1;padding:10px 4px;font-size:1rem}.seg button.on{outline:3px solid #fff}
+.scores{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.pl{flex:1;min-width:70px;text-align:center;padding:6px;border-radius:8px;background:#3a2a1a;border:2px solid #5a4328;font-size:.9rem}
+.pl.cur{border-color:#e6c36a;background:#5a4328}
+.pl b{display:block;font-size:1.3rem;color:#e6c36a}
+.status{text-align:center;min-height:3.2em;margin:4px 0}
+.turn{text-align:center;font-size:1.1rem}
+.turn strong{color:#e6c36a;font-size:1.5rem}
+.dice{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:14px;justify-items:center;flex:1;align-content:center}
+.die{width:min(26vw,110px);aspect-ratio:1;background:#f8f0dc;border-radius:16%;position:relative;box-shadow:0 5px 0 #a58a58,0 8px 12px #0008;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:11%;transition:transform .15s}
+.die i{width:70%;height:70%;border-radius:50%;background:#2a1d12;place-self:center;visibility:hidden}
+.die i.on{visibility:visible}
+.die.sel{transform:translateY(-8px);background:#ffe9a0;box-shadow:0 0 0 4px #e6c36a,0 8px 12px #0008}
+.die.held{opacity:.45;background:#cdbf9c;box-shadow:none}
+.die.rolling{animation:shake .35s}
+.die.empty{visibility:hidden}
+@keyframes shake{0%{transform:rotate(0)}25%{transform:rotate(-25deg) scale(.9)}50%{transform:rotate(20deg) scale(1.05)}75%{transform:rotate(-10deg)}100%{transform:rotate(0)}}
+.actions{display:flex;gap:10px}.actions button{flex:1}
+.pass{position:fixed;inset:0;background:#1d130aee;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:20px;z-index:10}
+.pass h2{color:#e6c36a;font-size:2rem;margin:0}
+.rules{font-size:.9rem;line-height:1.4}.rules td{padding:2px 8px 2px 0}
+details{margin-top:8px}summary{cursor:pointer}
+</style>
+</head>
+<body>
+<h1>⚄ FARKLE DICE ⚀</h1>
+<main>
+<section id="setup" class="card">
+  <label>Players (2–4)</label>
+  <div class="seg" id="count"></div>
+  <div id="names" style="margin-top:8px"></div>
+  <label>Play to</label>
+  <div class="seg" id="target"></div>
+  <br>
+  <button id="start" style="width:100%">Start game</button>
+  <details class="rules"><summary>Rules</summary>
+    <p>Roll six dice. Tap scoring dice to set them aside, then <b>Roll</b> the rest or <b>Bank</b> your points. If a roll has no scoring dice, you <b>bust</b> and lose the turn's points. Scored all six? <b>Hot dice</b> – roll all six again. First to reach the target triggers a final round; highest score wins.</p>
+    <table>
+      <tr><td>Single 1</td><td>100</td></tr>
+      <tr><td>Single 5</td><td>50</td></tr>
+      <tr><td>Three 1s</td><td>1000</td></tr>
+      <tr><td>Three 2–6s</td><td>face × 100</td></tr>
+      <tr><td>4 / 5 / 6 of a kind</td><td>×2 / ×4 / ×8 of the three</td></tr>
+      <tr><td>Straight 1–5</td><td>500</td></tr>
+      <tr><td>Straight 2–6</td><td>750</td></tr>
+      <tr><td>Straight 1–6</td><td>1500</td></tr>
+    </table>
+    <p>You must bank at least 300 points to get on the board (you may keep rolling until you reach it).</p>
+  </details>
+</section>
+<section id="game" class="hidden" style="display:flex;flex-direction:column;flex:1">
+  <div class="scores" id="scores"></div>
+  <div class="turn"><span id="who"></span> — this turn: <strong id="turnScore">0</strong></div>
+  <div class="status" id="status"></div>
+  <div class="dice" id="dice"></div>
+  <div class="actions">
+    <button id="roll">Roll</button>
+    <button id="bank" class="sec">Bank</button>
+  </div>
+  <button id="quit" class="sec" style="margin-top:10px;padding:8px">New game</button>
+</section>
+</main>
+<div id="pass" class="pass hidden"><h2 id="passTitle"></h2><p id="passText"></p><button id="passBtn">Ready</button></div>
+<script>
+const MIN_ENTRY = 300;
+const $ = id => document.getElementById(id);
+const PIPS = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+// Returns score of the dice, or -1 if any die does not contribute.
+function scoreDice(vals) {
+  if (!vals.length) return 0;
+  const c = [0,0,0,0,0,0,0];
+  vals.forEach(v => c[v]++);
+  let best = -1;
+  const straights = [[[1,2,3,4,5],500],[[2,3,4,5,6],750]];
+  const candidates = [vals];
+  const remove = (arr, rm) => { const a = arr.slice(); rm.forEach(x => a.splice(a.indexOf(x),1)); return a; };
+  if (vals.length === 6 && [1,2,3,4,5,6].every(n => c[n] === 1)) best = 1500;
+  for (const [s, pts] of straights) {
+    if (s.every(n => c[n] >= 1)) {
+      const r = base(remove(vals, s));
+      if (r >= 0) best = Math.max(best, pts + r);
+    }
+  }
+  return Math.max(best, base(vals));
+}
+function base(vals) {
+  const c = [0,0,0,0,0,0,0];
+  vals.forEach(v => c[v]++);
+  let s = 0;
+  for (let n = 1; n <= 6; n++) {
+    if (!c[n]) continue;
+    if (c[n] >= 3) s += (n === 1 ? 1000 : n * 100) * 2 ** (c[n] - 3);
+    else if (n === 1) s += 100 * c[n];
+    else if (n === 5) s += 50 * c[n];
+    else return -1;
+  }
+  return s;
+}
+function hasScoring(vals) {
+  const c = [0,0,0,0,0,0,0];
+  vals.forEach(v => c[v]++);
+  return c[1] > 0 || c[5] > 0 || c.some(x => x >= 3) ||
+    [1,2,3,4,5].every(n => c[n]) || [2,3,4,5,6].every(n => c[n]);
+}
+let G = null;
+let nPlayers = 2, target = 2000;
+function seg(el, opts, cur, cb) {
+  el.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.textContent = o; b.className = o === cur ? 'on' : '';
+    b.onclick = () => { cb(o); seg(el, opts, o, cb); };
+    el.appendChild(b);
+  });
+}
+function renderNames() {
+  const saved = [...document.querySelectorAll('#names input')].map(i => i.value);
+  $('names').innerHTML = '';
+  for (let i = 0; i < nPlayers; i++) {
+    const inp = document.createElement('input');
+    inp.type = 'text'; inp.maxLength = 12; inp.placeholder = 'Player ' + (i+1);
+    inp.value = saved[i] || '';
+    $('names').appendChild(inp);
+  }
+}
+seg($('count'), [2,3,4], 2, n => { nPlayers = n; renderNames(); });
+seg($('target'), [1000,2000,4000], 2000, n => target = n);
+renderNames();
+$('start').onclick = () => {
+  const names = [...document.querySelectorAll('#names input')].map((i, k) => i.value.trim() || 'Player ' + (k+1));
+  G = { players: names.map(n => ({ name: n, score: 0 })), cur: 0, target, finalFor: null };
+  $('setup').classList.add('hidden'); $('game').classList.remove('hidden');
+  startTurn(true);
+};
+$('quit').onclick = () => {
+  if (confirm('Abandon this game?')) { $('game').classList.add('hidden'); $('setup').classList.remove('hidden'); }
+};
+function showPass(title, text, cb) {
+  $('passTitle').textContent = title; $('passText').textContent = text;
+  $('pass').classList.remove('hidden');
+  $('passBtn').onclick = () => { $('pass').classList.add('hidden'); cb && cb(); };
+}
+function startTurn(first) {
+  const p = G.players[G.cur];
+  G.turn = { total: 0, dice: Array.from({length:6}, () => ({v:0, s:'free'})), rolled: false, over: false };
+  const go = () => { setStatus('Roll the dice!'); render(); };
+  if (first && G.players.length === 1) go();
+  else showPass(p.name + "'s turn", 'Pass the device, then tap Ready.', go);
+  render();
+}
+function setStatus(t) { $('status').textContent = t; }
+function selVals() { return G.turn.dice.filter(d => d.s === 'sel').map(d => d.v); }
+function selScore() { const v = selVals(); return v.length ? scoreDice(v) : 0; }
+function render() {
+  const t = G.turn, p = G.players[G.cur];
+  $('scores').innerHTML = G.players.map((q,i) =>
+    `<div class="pl ${i===G.cur?'cur':''}">${esc(q.name)}<b>${q.score}</b></div>`).join('');
+  $('who').textContent = p.name;
+  const sc = Math.max(selScore(), 0);
+  $('turnScore').textContent = t.total + sc;
+  const el = $('dice'); el.innerHTML = '';
+  t.dice.forEach((d, i) => {
+    const e = document.createElement('div');
+    e.className = 'die ' + (d.v ? d.s : 'empty');
+    if (!d.v) e.className = 'die';
+    if (d.rolling) e.classList.add('rolling');
+    const pips = d.v ? PIPS[d.v] : [];
+    for (let k = 0; k < 9; k++) e.innerHTML += `<i class="${pips.includes(k)?'on':''}"></i>`;
+    if (!d.v) e.style.opacity = .35;
+    e.onclick = () => toggle(i);
+    el.appendChild(e);
+  });
+  const s = selScore(), valid = selVals().length > 0 && s > 0;
+  const entry = p.score === 0 && t.total + s < MIN_ENTRY;
+  $('roll').disabled = t.over || (t.rolled && !valid);
+  const remaining = t.dice.filter(d => d.s !== 'held').length;
+  $('roll').textContent = t.rolled && valid && selVals().length === remaining ? 'Roll all 6 🔥' : 'Roll';
+  $('bank').disabled = t.over || !t.rolled || !valid || entry;
+  $('bank').textContent = 'Bank ' + (t.total + Math.max(s,0));
+}
+function esc(s) { return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function toggle(i) {
+  const t = G.turn, d = t.dice[i];
+  if (t.over || !d.v || d.s === 'held') return;
+  d.s = d.s === 'sel' ? 'free' : 'sel';
+  const s = selVals().length ? scoreDice(selVals()) : 0;
+  if (selVals().length && s < 0) setStatus('Every selected die must score.');
+  else setStatus(s > 0 ? `Selection: ${s}` : 'Select scoring dice.');
+  render();
+}
+function lockSelection() {
+  const t = G.turn;
+  t.total += selScore();
+  t.dice.forEach(d => { if (d.s === 'sel') d.s = 'held'; });
+  if (t.dice.every(d => d.s === 'held')) {
+    t.dice.forEach(d => { d.s = 'free'; d.v = 0; });
+    return true;
+  }
+  return false;
+}
+$('roll').onclick = () => {
+  const t = G.turn;
+  let hot = false;
+  if (t.rolled) {
+    if (selScore() <= 0) return;
+    hot = lockSelection();
+  }
+  t.rolled = true;
+  const free = t.dice.filter(d => d.s === 'free');
+  free.forEach(d => { d.v = 1 + Math.floor(Math.random() * 6); d.rolling = true; });
+  if (navigator.vibrate) navigator.vibrate(30);
+  setStatus(hot ? '🔥 Hot dice! Rolling all six.' : 'Pick scoring dice.');
+  render();
+  setTimeout(() => { free.forEach(d => delete d.rolling); }, 400);
+  if (!hasScoring(free.map(d => d.v))) {
+    t.over = true;
+    render();
+    setStatus('💥 Bust! Turn points lost.');
+    if (navigator.vibrate) navigator.vibrate([80,40,80]);
+    setTimeout(() => nextPlayer(), 1800);
+  }
+};
+$('bank').onclick = () => {
+  const t = G.turn, p = G.players[G.cur];
+  if (selScore() <= 0) return;
+  lockSelection();
+  p.score += t.total;
+  t.over = true;
+  setStatus(`Banked ${t.total}!`);
+  render();
+  if (G.finalFor === null && p.score >= G.target) G.finalFor = G.cur;
+  setTimeout(nextPlayer, 1200);
+};
+function nextPlayer() {
+  G.cur = (G.cur + 1) % G.players.length;
+  if (G.finalFor !== null && G.cur === G.finalFor) return endGame();
+  startTurn();
+}
+function endGame() {
+  const best = Math.max(...G.players.map(p => p.score));
+  const winners = G.players.filter(p => p.score === best).map(p => p.name).join(' & ');
+  const board = G.players.map(p => `${p.name}: ${p.score}`).join('  •  ');
+  $('game').classList.add('hidden'); $('setup').classList.remove('hidden');
+  showPass('🏆 ' + winners + ' wins!', board, null);
+  $('passBtn').textContent = 'Play again';
+}
+$('passBtn').addEventListener('click', () => { $('passBtn').textContent = 'Ready'; });
+</script>
+</body>
+</html>
