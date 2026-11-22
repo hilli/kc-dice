@@ -9,7 +9,12 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
 html,body{margin:0;height:100%;background:#2a1d12;color:#f1e3c4;font-family:Georgia,'Times New Roman',serif}
 body{background:radial-gradient(circle at 50% 0,#4a3420,#1d130a);display:flex;flex-direction:column;min-height:100dvh}
-h1{font-size:1.6rem;text-align:center;margin:.6rem 0;letter-spacing:.08em;color:#e6c36a}
+header{display:flex;align-items:center;gap:8px;max-width:560px;width:100%;margin:0 auto;padding:0 12px}
+h1{flex:1;min-width:0;font-size:clamp(1rem,5vw,1.6rem);text-align:center;margin:.6rem 0;letter-spacing:.08em;color:#e6c36a}
+@media(max-width:380px){h1{font-size:.9rem;letter-spacing:.04em}h1 .ornament{display:none}}
+.language{position:relative;z-index:11;display:flex;align-items:center;gap:6px;font-size:.85rem}
+.language label{margin:0}
+.language select{font:inherit;color:#2a1d12;background:#f1e3c4;border:2px solid #7a5a30;border-radius:8px;padding:6px}
 main{flex:1;display:flex;flex-direction:column;padding:0 12px 12px;max-width:560px;width:100%;margin:0 auto}
 .hidden{display:none!important}
 .card{background:#3a2a1a;border:2px solid #7a5a30;border-radius:12px;padding:14px;margin-bottom:12px}
@@ -44,41 +49,51 @@ details{margin-top:8px}summary{cursor:pointer}
 </style>
 </head>
 <body>
-<h1>⚄ FARKLE DICE ⚀</h1>
+<header>
+  <h1><span class="ornament" aria-hidden="true">⚄</span> <span data-i18n="heading">FARKLE DICE</span> <span class="ornament" aria-hidden="true">⚀</span></h1>
+  <div class="language">
+    <label for="language" data-i18n="language">Language</label>
+    <select id="language">
+      <option value="en">English</option>
+      <option value="pl">Polski</option>
+      <option value="da">Dansk</option>
+    </select>
+  </div>
+</header>
 <main>
 <section id="setup" class="card">
-  <label>Players (2–4)</label>
+  <label data-i18n="players">Players (2–4)</label>
   <div class="seg" id="count"></div>
   <div id="names" style="margin-top:8px"></div>
-  <label>Play to</label>
+  <label data-i18n="target">Play to</label>
   <div class="seg" id="target"></div>
   <br>
-  <button id="start" style="width:100%">Start game</button>
-  <details class="rules"><summary>Rules</summary>
-    <p>Roll six dice. Tap scoring dice to set them aside, then <b>Roll</b> the rest or <b>Bank</b> your points. If a roll has no scoring dice, you <b>bust</b> and lose the turn's points. Scored all six? <b>Hot dice</b> – roll all six again. First to reach the target triggers a final round; highest score wins.</p>
+  <button id="start" style="width:100%" data-i18n="start">Start game</button>
+  <details class="rules"><summary data-i18n="rules">Rules</summary>
+    <p><span data-i18n="rulesIntro">Roll six dice. Tap scoring dice to set them aside, then </span><b data-i18n="roll">Roll</b><span data-i18n="rulesAfterRoll"> the rest or </span><b data-i18n="bank">Bank</b><span data-i18n="rulesAfterBank"> your points. If a roll has no scoring dice, you </span><b data-i18n="bustWord">bust</b><span data-i18n="rulesAfterBust"> and lose the turn's points. Scored all six? </span><b data-i18n="hotWord">Hot dice</b><span data-i18n="rulesEnd"> – roll all six again. First to reach the target triggers a final round; highest score wins.</span></p>
     <table>
-      <tr><td>Single 1</td><td>100</td></tr>
-      <tr><td>Single 5</td><td>50</td></tr>
-      <tr><td>Three 1s</td><td>1000</td></tr>
-      <tr><td>Three 2–6s</td><td>face × 100</td></tr>
-      <tr><td>4 / 5 / 6 of a kind</td><td>×2 / ×4 / ×8 of the three</td></tr>
-      <tr><td>Straight 1–5</td><td>500</td></tr>
-      <tr><td>Straight 2–6</td><td>750</td></tr>
-      <tr><td>Straight 1–6</td><td>1500</td></tr>
+      <tr><td data-i18n="singleOne">Single 1</td><td>100</td></tr>
+      <tr><td data-i18n="singleFive">Single 5</td><td>50</td></tr>
+      <tr><td data-i18n="threeOnes">Three 1s</td><td>1000</td></tr>
+      <tr><td data-i18n="threeOthers">Three 2–6s</td><td data-i18n="faceTimes">face × 100</td></tr>
+      <tr><td data-i18n="multipleKind">4 / 5 / 6 of a kind</td><td data-i18n="multipleValue">×2 / ×4 / ×8 of the three</td></tr>
+      <tr><td data-i18n="straightOneFive">Straight 1–5</td><td>500</td></tr>
+      <tr><td data-i18n="straightTwoSix">Straight 2–6</td><td>750</td></tr>
+      <tr><td data-i18n="straightOneSix">Straight 1–6</td><td>1500</td></tr>
     </table>
-    <p>You must bank at least 300 points to get on the board (you may keep rolling until you reach it).</p>
+    <p data-i18n="entry">You must bank at least 300 points to get on the board (you may keep rolling until you reach it).</p>
   </details>
 </section>
 <section id="game" class="hidden" style="display:flex;flex-direction:column;flex:1">
   <div class="scores" id="scores"></div>
-  <div class="turn"><span id="who"></span> — this turn: <strong id="turnScore">0</strong></div>
+  <div class="turn"><span id="who"></span> — <span data-i18n="thisTurn">this turn:</span> <strong id="turnScore">0</strong></div>
   <div class="status" id="status"></div>
   <div class="dice" id="dice"></div>
   <div class="actions">
     <button id="roll">Roll</button>
     <button id="bank" class="sec">Bank</button>
   </div>
-  <button id="quit" class="sec" style="margin-top:10px;padding:8px">New game</button>
+  <button id="quit" class="sec" style="margin-top:10px;padding:8px" data-i18n="newGame">New game</button>
 </section>
 </main>
 <div id="pass" class="pass hidden"><h2 id="passTitle"></h2><p id="passText"></p><button id="passBtn">Ready</button></div>
@@ -86,6 +101,78 @@ details{margin-top:8px}summary{cursor:pointer}
 const MIN_ENTRY = 300;
 const $ = id => document.getElementById(id);
 const PIPS = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+const TEXT = {
+  en: {
+    title: 'Farkle Dice – Medieval Dice Game', heading: 'FARKLE DICE', language: 'Language',
+    players: 'Players (2–4)', target: 'Play to', start: 'Start game', rules: 'Rules',
+    rulesIntro: 'Roll six dice. Tap scoring dice to set them aside, then ',
+    roll: 'Roll', rulesAfterRoll: ' the rest or ', bank: 'Bank',
+    rulesAfterBank: ' your points. If a roll has no scoring dice, you ',
+    bustWord: 'bust', rulesAfterBust: " and lose the turn's points. Scored all six? ",
+    hotWord: 'Hot dice', rulesEnd: ' – roll all six again. First to reach the target triggers a final round; highest score wins.',
+    singleOne: 'Single 1', singleFive: 'Single 5', threeOnes: 'Three 1s', threeOthers: 'Three 2–6s',
+    faceTimes: 'face × 100', multipleKind: '4 / 5 / 6 of a kind', multipleValue: '×2 / ×4 / ×8 of the three',
+    straightOneFive: 'Straight 1–5', straightTwoSix: 'Straight 2–6', straightOneSix: 'Straight 1–6',
+    entry: 'You must bank at least 300 points to get on the board (you may keep rolling until you reach it).',
+    thisTurn: 'this turn:', newGame: 'New game', player: n => `Player ${n}`,
+    playerTurn: name => `${name}'s turn`, passDevice: 'Pass the device, then tap Ready.', ready: 'Ready',
+    rollPrompt: 'Roll the dice!', pickScoring: 'Pick scoring dice.', selectScoring: 'Select scoring dice.',
+    invalidSelection: 'Every selected die must score.', selection: n => `Selection: ${n}`,
+    hotDice: '🔥 Hot dice! Rolling all six.', bust: '💥 Bust! Turn points lost.',
+    banked: n => `Banked ${n}!`, rollAll: 'Roll all 6 🔥', bankAmount: n => `Bank ${n}`,
+    confirmQuit: 'Abandon this game?', join: ' & ',
+    winner: (names, count) => `🏆 ${names} ${count === 1 ? 'wins' : 'win'}!`, playAgain: 'Play again',
+  },
+  pl: {
+    title: 'Kości Farkle – średniowieczna gra w kości', heading: 'KOŚCI FARKLE', language: 'Język',
+    players: 'Gracze (2–4)', target: 'Graj do', start: 'Rozpocznij grę', rules: 'Zasady',
+    rulesIntro: 'Rzuć sześcioma kośćmi. Dotknij punktujących kości, aby je odłożyć, a następnie wybierz ',
+    roll: 'Rzuć', rulesAfterRoll: ', aby rzucić pozostałymi, lub ', bank: 'Zapisz',
+    rulesAfterBank: ', aby zapisać punkty. Jeśli żaden wynik nie punktuje, następuje ',
+    bustWord: 'spalenie tury', rulesAfterBust: ' i tracisz punkty z tej tury. Odłożono wszystkie sześć kości? ',
+    hotWord: 'Gorące kości', rulesEnd: ' – rzuć wszystkimi ponownie. Gdy ktoś osiągnie cel, rozpoczyna się ostatnia runda; wygrywa najwyższy wynik.',
+    singleOne: 'Jedna jedynka', singleFive: 'Jedna piątka', threeOnes: 'Trzy jedynki', threeOthers: 'Trzy jednakowe (2–6)',
+    faceTimes: 'liczba oczek × 100', multipleKind: '4 / 5 / 6 jednakowych kości', multipleValue: '×2 / ×4 / ×8 wartości trójki',
+    straightOneFive: 'Sekwencja 1–5', straightTwoSix: 'Sekwencja 2–6', straightOneSix: 'Sekwencja 1–6',
+    entry: 'Aby rozpocząć zdobywanie punktów, musisz zapisać co najmniej 300 punktów w jednej turze (możesz rzucać dalej, dopóki ich nie uzbierasz).',
+    thisTurn: 'w tej turze:', newGame: 'Nowa gra', player: n => `Gracz ${n}`,
+    playerTurn: name => `Tura: ${name}`, passDevice: 'Podaj urządzenie następnemu graczowi i wybierz Gotowe.', ready: 'Gotowe',
+    rollPrompt: 'Rzuć kośćmi!', pickScoring: 'Wybierz punktujące kości.', selectScoring: 'Wybierz punktujące kości.',
+    invalidSelection: 'Każda wybrana kość musi dawać punkty.', selection: n => `Wybrane: ${n}`,
+    hotDice: '🔥 Gorące kości! Rzucasz wszystkimi sześcioma.', bust: '💥 Spalona tura! Punkty z tej tury przepadają.',
+    banked: n => `Zapisano ${n} pkt!`, rollAll: 'Rzuć wszystkimi 6 🔥', bankAmount: n => `Zapisz ${n}`,
+    confirmQuit: 'Porzucić tę grę?', join: ' i ',
+    winner: (names, count) => `🏆 ${count === 1 ? 'Zwycięzca' : 'Zwycięzcy'}: ${names}!`, playAgain: 'Zagraj ponownie',
+  },
+  da: {
+    title: 'Farkleterninger – middelalderligt terningspil', heading: 'FARKLE-TERNINGER', language: 'Sprog',
+    players: 'Spillere (2–4)', target: 'Spil til', start: 'Start spil', rules: 'Regler',
+    rulesIntro: 'Kast seks terninger. Tryk på de terninger, der giver point, for at lægge dem til side. Vælg derefter ',
+    roll: 'Kast', rulesAfterRoll: ' for at kaste resten eller ', bank: 'Gem',
+    rulesAfterBank: ' for at gemme pointene. Hvis et kast ikke giver point, slår du en ',
+    bustWord: 'nitte', rulesAfterBust: ' og mister turens point. Har du lagt alle seks terninger til side? ',
+    hotWord: 'Varme terninger', rulesEnd: ' – kast alle seks igen. Når en spiller når målet, begynder en sidste runde; den højeste score vinder.',
+    singleOne: 'En enkelt 1’er', singleFive: 'En enkelt 5’er', threeOnes: 'Tre 1’ere', threeOthers: 'Tre ens (2–6)',
+    faceTimes: 'antal øjne × 100', multipleKind: '4 / 5 / 6 ens', multipleValue: '×2 / ×4 / ×8 af værdien for tre ens',
+    straightOneFive: 'Række 1–5', straightTwoSix: 'Række 2–6', straightOneSix: 'Række 1–6',
+    entry: 'Du skal gemme mindst 300 point for at komme på tavlen (du kan fortsætte med at kaste, indtil du har nok).',
+    thisTurn: 'denne tur:', newGame: 'Nyt spil', player: n => `Spiller ${n}`,
+    playerTurn: name => `Tur: ${name}`, passDevice: 'Giv enheden videre, og tryk på Klar.', ready: 'Klar',
+    rollPrompt: 'Kast terningerne!', pickScoring: 'Vælg terninger, der giver point.', selectScoring: 'Vælg terninger, der giver point.',
+    invalidSelection: 'Alle valgte terninger skal give point.', selection: n => `Valg: ${n}`,
+    hotDice: '🔥 Varme terninger! Kast alle seks igen.', bust: '💥 Nitte! Du mister turens point.',
+    banked: n => `Gemt ${n} point!`, rollAll: 'Kast alle 6 🔥', bankAmount: n => `Gem ${n}`,
+    confirmQuit: 'Vil du afslutte dette spil?', join: ' og ',
+    winner: (names, count) => `🏆 ${count === 1 ? 'Vinder' : 'Vindere'}: ${names}!`, playAgain: 'Spil igen',
+  },
+};
+let language = 'en', statusMessage = null, passMessage = null;
+function tr(key, ...args) {
+  const value = TEXT[language][key];
+  if (typeof value === 'function') return value(...args);
+  if (typeof value !== 'string') throw new Error(`Missing translation: ${language}.${key}`);
+  return value;
+}
 // Returns score of the dice, or -1 if any die does not contribute.
 function scoreDice(vals) {
   if (!vals.length) return 0;
@@ -139,44 +226,75 @@ function renderNames() {
   $('names').innerHTML = '';
   for (let i = 0; i < nPlayers; i++) {
     const inp = document.createElement('input');
-    inp.type = 'text'; inp.maxLength = 12; inp.placeholder = 'Player ' + (i+1);
+    inp.type = 'text'; inp.maxLength = 12;
     inp.value = saved[i] || '';
     $('names').appendChild(inp);
   }
+  updateNameLabels();
+}
+function updateNameLabels() {
+  document.querySelectorAll('#names input').forEach((input, i) => {
+    input.placeholder = tr('player', i + 1);
+    input.setAttribute('aria-label', tr('player', i + 1));
+  });
+}
+function playerName(player, index) {
+  return player.name || tr('player', index + 1);
+}
+function applyLanguage() {
+  document.documentElement.lang = language;
+  document.title = tr('title');
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = tr(el.dataset.i18n); });
+  updateNameLabels();
+  if (G) render();
+  if (statusMessage) $('status').textContent = tr(statusMessage.key, ...statusMessage.args);
+  if (passMessage) renderPass();
+  else $('passBtn').textContent = tr('ready');
 }
 seg($('count'), [2,3,4], 2, n => { nPlayers = n; renderNames(); });
 seg($('target'), [1000,2000,4000], 2000, n => target = n);
 renderNames();
+applyLanguage();
+$('language').onchange = () => { language = $('language').value; applyLanguage(); };
 $('start').onclick = () => {
-  const names = [...document.querySelectorAll('#names input')].map((i, k) => i.value.trim() || 'Player ' + (k+1));
+  const names = [...document.querySelectorAll('#names input')].map(i => i.value.trim());
   G = { players: names.map(n => ({ name: n, score: 0 })), cur: 0, target, finalFor: null };
   $('setup').classList.add('hidden'); $('game').classList.remove('hidden');
   startTurn(true);
 };
 $('quit').onclick = () => {
-  if (confirm('Abandon this game?')) { $('game').classList.add('hidden'); $('setup').classList.remove('hidden'); }
+  if (confirm(tr('confirmQuit'))) { $('game').classList.add('hidden'); $('setup').classList.remove('hidden'); }
 };
-function showPass(title, text, cb) {
-  $('passTitle').textContent = title; $('passText').textContent = text;
+function renderPass() {
+  $('passTitle').textContent = passMessage.title();
+  $('passText').textContent = passMessage.text();
+  $('passBtn').textContent = tr(passMessage.button);
+}
+function showPass(title, text, cb, button = 'ready') {
+  passMessage = { title, text, button };
+  renderPass();
   $('pass').classList.remove('hidden');
-  $('passBtn').onclick = () => { $('pass').classList.add('hidden'); cb && cb(); };
+  $('passBtn').onclick = () => { $('pass').classList.add('hidden'); passMessage = null; cb && cb(); };
 }
 function startTurn(first) {
-  const p = G.players[G.cur];
+  const index = G.cur, p = G.players[index];
   G.turn = { total: 0, dice: Array.from({length:6}, () => ({v:0, s:'free'})), rolled: false, over: false };
-  const go = () => { setStatus('Roll the dice!'); render(); };
+  const go = () => { setStatus('rollPrompt'); render(); };
   if (first && G.players.length === 1) go();
-  else showPass(p.name + "'s turn", 'Pass the device, then tap Ready.', go);
+  else showPass(() => tr('playerTurn', playerName(p, index)), () => tr('passDevice'), go);
   render();
 }
-function setStatus(t) { $('status').textContent = t; }
+function setStatus(key, ...args) {
+  statusMessage = { key, args };
+  $('status').textContent = tr(key, ...args);
+}
 function selVals() { return G.turn.dice.filter(d => d.s === 'sel').map(d => d.v); }
 function selScore() { const v = selVals(); return v.length ? scoreDice(v) : 0; }
 function render() {
   const t = G.turn, p = G.players[G.cur];
   $('scores').innerHTML = G.players.map((q,i) =>
-    `<div class="pl ${i===G.cur?'cur':''}">${esc(q.name)}<b>${q.score}</b></div>`).join('');
-  $('who').textContent = p.name;
+    `<div class="pl ${i===G.cur?'cur':''}">${esc(playerName(q, i))}<b>${q.score}</b></div>`).join('');
+  $('who').textContent = playerName(p, G.cur);
   const sc = Math.max(selScore(), 0);
   $('turnScore').textContent = t.total + sc;
   const el = $('dice'); el.innerHTML = '';
@@ -195,9 +313,9 @@ function render() {
   const entry = p.score === 0 && t.total + s < MIN_ENTRY;
   $('roll').disabled = t.over || (t.rolled && !valid);
   const remaining = t.dice.filter(d => d.s !== 'held').length;
-  $('roll').textContent = t.rolled && valid && selVals().length === remaining ? 'Roll all 6 🔥' : 'Roll';
+  $('roll').textContent = tr(t.rolled && valid && selVals().length === remaining ? 'rollAll' : 'roll');
   $('bank').disabled = t.over || !t.rolled || !valid || entry;
-  $('bank').textContent = 'Bank ' + (t.total + Math.max(s,0));
+  $('bank').textContent = tr('bankAmount', t.total + Math.max(s,0));
 }
 function esc(s) { return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function toggle(i) {
@@ -205,8 +323,9 @@ function toggle(i) {
   if (t.over || !d.v || d.s === 'held') return;
   d.s = d.s === 'sel' ? 'free' : 'sel';
   const s = selVals().length ? scoreDice(selVals()) : 0;
-  if (selVals().length && s < 0) setStatus('Every selected die must score.');
-  else setStatus(s > 0 ? `Selection: ${s}` : 'Select scoring dice.');
+  if (selVals().length && s < 0) setStatus('invalidSelection');
+  else if (s > 0) setStatus('selection', s);
+  else setStatus('selectScoring');
   render();
 }
 function lockSelection() {
@@ -230,13 +349,13 @@ $('roll').onclick = () => {
   const free = t.dice.filter(d => d.s === 'free');
   free.forEach(d => { d.v = 1 + Math.floor(Math.random() * 6); d.rolling = true; });
   if (navigator.vibrate) navigator.vibrate(30);
-  setStatus(hot ? '🔥 Hot dice! Rolling all six.' : 'Pick scoring dice.');
+  setStatus(hot ? 'hotDice' : 'pickScoring');
   render();
   setTimeout(() => { free.forEach(d => delete d.rolling); }, 400);
   if (!hasScoring(free.map(d => d.v))) {
     t.over = true;
     render();
-    setStatus('💥 Bust! Turn points lost.');
+    setStatus('bust');
     if (navigator.vibrate) navigator.vibrate([80,40,80]);
     setTimeout(() => nextPlayer(), 1800);
   }
@@ -247,7 +366,7 @@ $('bank').onclick = () => {
   lockSelection();
   p.score += t.total;
   t.over = true;
-  setStatus(`Banked ${t.total}!`);
+  setStatus('banked', t.total);
   render();
   if (G.finalFor === null && p.score >= G.target) G.finalFor = G.cur;
   setTimeout(nextPlayer, 1200);
@@ -258,14 +377,15 @@ function nextPlayer() {
   startTurn();
 }
 function endGame() {
-  const best = Math.max(...G.players.map(p => p.score));
-  const winners = G.players.filter(p => p.score === best).map(p => p.name).join(' & ');
-  const board = G.players.map(p => `${p.name}: ${p.score}`).join('  •  ');
+  const players = G.players, best = Math.max(...players.map(p => p.score));
+  const winners = players.map((p, i) => ({ p, i })).filter(({ p }) => p.score === best);
   $('game').classList.add('hidden'); $('setup').classList.remove('hidden');
-  showPass('🏆 ' + winners + ' wins!', board, null);
-  $('passBtn').textContent = 'Play again';
+  showPass(
+    () => tr('winner', winners.map(({ p, i }) => playerName(p, i)).join(tr('join')), winners.length),
+    () => players.map((p, i) => `${playerName(p, i)}: ${p.score}`).join('  •  '),
+    null, 'playAgain'
+  );
 }
-$('passBtn').addEventListener('click', () => { $('passBtn').textContent = 'Ready'; });
 </script>
 </body>
 </html>
